@@ -18,10 +18,10 @@ podTemplate(yaml: '''
 
   node(POD_LABEL) {
     stage('Deploy application') {
-      git branch: 'main', url: 'https://github.com/syntasso/workshop.git'
+      git branch: 'main', url: 'https://github.com/syntasso/sample-golang-app.git'
       container('kubectl') {
         sh '''
-        kubectl apply --filename ./sample-todo-app/k8s/serving.yaml
+        kubectl apply --filename ./k8s/serving.yaml
         until [ "$(curl -s -o /dev/null -w "%{http_code}" -H "host: todo.default.example.com" kourier.kourier-system.svc.cluster.local)" -eq "200" ]
         do
           sleep 2
