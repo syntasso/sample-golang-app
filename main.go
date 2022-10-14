@@ -76,6 +76,7 @@ func getTodos(c *fiber.Ctx, db *sql.DB) error {
 	}
 	return c.Render("index", fiber.Map{
 		"Todos": todos,
+		"Enterprise": os.Getenv("ENTERPRISE"),
 	})
 }
 
