@@ -18,11 +18,12 @@ type todo struct {
 }
 
 func main() {
-	pgUser := or(os.Getenv("PGUSER"), "postgres")
-	pgPassword := os.Getenv("PGPASSWORD")
-	pgHost := or(os.Getenv("PGHOST"), "localhost:5432")
-	pgSSLMode := or(os.Getenv("PGSSLMODE"), "require")
-	dbName := or(os.Getenv("DBNAME"), "mydb")
+	pgUser := or(or(os.Getenv("DB_USER"), os.Getenv("PGUSER")), "postgres")
+	pgPassword := or(os.Getenv("DB_PASSWORD"), os.Getenv("PGPASSWORD"))
+	pgHost := or(or(os.Getenv("DB_HOST"), os.Getenv("PGHOST")), "localhost:5432")
+	pgSSLMode := or(or(os.Getenv("DB_SSL_MODE"), os.Getenv("PGSSLMODE")), "require")
+	dbName := or(or(os.Getenv("DB_NAME"), os.Getenv("DBNAME")), "mydb")
+
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s/%s?sslmode=%s", pgUser, pgPassword, pgHost, dbName, pgSSLMode)
 
 	// Connect to database
@@ -75,7 +76,7 @@ func getTodos(c *fiber.Ctx, db *sql.DB) error {
 		todos = append(todos, res)
 	}
 	return c.Render("index", fiber.Map{
-		"Todos": todos,
+		"Todos":      todos,
 		"Enterprise": os.Getenv("ENTERPRISE"),
 	})
 }
