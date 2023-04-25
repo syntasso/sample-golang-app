@@ -18,11 +18,11 @@ podTemplate(yaml: '''
 
   node(POD_LABEL) {
     stage('Deploy application') {
-      git branch: 'main', url: 'https://github.com/syntasso/sample-golang-app.git'
+      git branch: 'workshop-refactor', url: 'https://github.com/syntasso/sample-golang-app.git'
       container('kubectl') {
         sh '''
-        kubectl apply --filename ./k8s/serving.yaml
-        until [ "$(curl -s -o /dev/null -w "%{http_code}" -H "host: todo.default.local.gd" kourier.kourier-system.svc.cluster.local)" -eq "200" ]
+        kubectl apply --filename ./k8s/app.yaml
+        until [ "$(curl -s -o /dev/null -w "%{http_code}" -H "host: todo.local.gd" nginx-nginx-ingress.default.svc.cluster.local)" -eq "200" ]
         do
           sleep 2
         done
