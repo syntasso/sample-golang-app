@@ -1,6 +1,9 @@
 podTemplate(yaml: '''
               apiVersion: v1
               kind: Pod
+							metadata:
+								name: pod
+								namespace: default
               spec:
                 serviceAccountName: example-knative-jenkins-deployer
                 containers:
