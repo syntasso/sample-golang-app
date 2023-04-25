@@ -1,9 +1,11 @@
-podTemplate(containers: [
-    containerTemplate(name: 'deploy', image: 'bitnami/kubectl:1.22.13', command: 'sleep', args: '99d', serviceAccount: 'example-knative-jenkins-deployer')
+podTemplate(
+  serviceAccount: 'example-knative-jenkins-deployer',
+  containers: [
+    containerTemplate(name: 'deploy', image: 'bitnami/kubectl:1.22.13', command: 'sleep', args: '99d', runAsUser: '0')
   ]) {
 
 		node(POD_LABEL) {
-			stage('Deploy application') {
+			stage('deploy') {
 				git branch: 'workshop-refactor', url: 'https://github.com/syntasso/sample-golang-app.git'
 				container('deploy') {
 					sh '''
