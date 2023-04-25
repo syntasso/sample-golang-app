@@ -1,38 +1,21 @@
-podTemplate(yaml: '''
-              apiVersion: v1
-              kind: Pod
-              metadata:
-                name: pod
-                namespace: default
-              spec:
-                serviceAccountName: example-knative-jenkins-deployer
-                containers:
-                - name: kubectl
-                  image: bitnami/kubectl:1.22.13
-                  imagePullPolicy: Always
-                  command:
-                  - sleep
-                  args:
-                  - 99d
-                  securityContext:
-                    runAsUser: 0
-'''
-  ) {
+podTemplate(containers: [
+    containerTemplate(name: 'deploy', image: 'bitnami/kubectl:1.22.13', command: 'sleep', args: '99d', serviceAccount: 'example-knative-jenkins-deployer')
+  ]) {
 
-  node(POD_LABEL) {
-    stage('Deploy application') {
-      git branch: 'workshop-refactor', url: 'https://github.com/syntasso/sample-golang-app.git'
-      container('kubectl') {
-        sh '''
-        kubectl apply --filename ./k8s/app.yaml
-        until [ "$(curl -s -o /dev/null -w "%{http_code}" -H "host: todo.local.gd" nginx-nginx-ingress.default.svc.cluster.local)" -eq "200" ]
-        do
-          sleep 2
-        done
-        '''
-      }
-    }
-  }
+		node(POD_LABEL) {
+			stage('Deploy application') {
+				git branch: 'workshop-refactor', url: 'https://github.com/syntasso/sample-golang-app.git'
+				container('deploy') {
+					sh '''
+					./kubectl apply --filename ./k8s/app.yaml
+					until [ "$(curl -s -o /dev/null -w "%{http_code}" -H "host: todo.local.gd" nginx-nginx-ingress.default.svc.cluster.local)" -eq "200" ]
+					do
+						sleep 2
+					done
+					'''
+				}
+			}
+		}
 }
 
 
