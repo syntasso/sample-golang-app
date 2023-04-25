@@ -7,7 +7,7 @@ podTemplate(containers: [
 				git branch: 'workshop-refactor', url: 'https://github.com/syntasso/sample-golang-app.git'
 				container('deploy') {
 					sh '''
-					./kubectl apply --filename ./k8s/app.yaml
+					kubectl apply --filename ./k8s/app.yaml
 					until [ "$(curl -s -o /dev/null -w "%{http_code}" -H "host: todo.local.gd" nginx-nginx-ingress.default.svc.cluster.local)" -eq "200" ]
 					do
 						sleep 2
