@@ -23,6 +23,9 @@
                     {{ if .Enterprise }}
                         <br /><strong class="text-secondary">Enterprise Edition™️</strong>
                     {{ end }}
+                    {{ if .Version }}
+                    <br /><strong class="text-secondary">Version {{ .Version }}</strong>
+                    {{ end }}
                </div>
            </div>
        </div>
