@@ -1,5 +1,6 @@
 FROM golang:1.18-alpine as builder
 
+ARG version
 WORKDIR /app
 
 COPY . ./
@@ -17,4 +18,6 @@ COPY --from=builder /app/views/ ./views/
 
 EXPOSE 8080
 
+ARG version
+ENV VERSION=${version}
 CMD [ "/app/todo-server" ]

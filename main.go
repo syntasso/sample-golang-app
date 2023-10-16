@@ -27,6 +27,9 @@ func main() {
 
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s/%s?sslmode=%s", pgUser, pgPassword, pgHost, dbName, pgSSLMode)
 
+	version := os.Getenv("VERSION")
+	fmt.Println("Version: ", version)
+
 	// Connect to database
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -50,7 +53,7 @@ func main() {
 	})
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return getTodos(c, db)
+		return getTodos(c, db, version)
 	})
 
 	app.Post("/", func(c *fiber.Ctx) error {
@@ -89,7 +92,7 @@ func main() {
 	log.Println(app.Listen(fmt.Sprintf(":%v", port)))
 }
 
-func getTodos(c *fiber.Ctx, db *sql.DB) error {
+func getTodos(c *fiber.Ctx, db *sql.DB, version string) error {
 	var res string
 	var todos []string
 	rows, err := db.Query("SELECT * FROM todos")
@@ -104,12 +107,10 @@ func getTodos(c *fiber.Ctx, db *sql.DB) error {
 		todos = append(todos, res)
 	}
 
-	containsCC := os.Getenv("CONTAINS_CC") == "true"
-
 	return c.Render("index", fiber.Map{
 		"Todos":      todos,
 		"Enterprise": os.Getenv("ENTERPRISE"),
-		"PCI":        containsCC,
+		"Version":    version,
 	})
 }
 
