@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -36,13 +37,19 @@ func main() {
 	}
 	defer db.Close()
 
-	if err := initDB(db); err != nil {
-		log.Fatal(err)
-	}
-
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,
+	})
+
+	//checked by kubernetes to see if the pod is ready to receive traffic
+	app.Get("/healthz", func(c *fiber.Ctx) error {
+		fmt.Println("healthcheck")
+		err := db.Ping()
+		if err != nil {
+			c.SendString(err.Error())
+		}
+		return err
 	})
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -61,6 +68,27 @@ func main() {
 	app.Static("/", "./public")
 	app.Use(logger.New())
 
+	//we need to keep re-trying until successful, but don't want to block
+	//the api form starting, so we kick off a go-routine
+	go func() {
+		x := 0
+		for {
+			log.Println("Attempting to connect to DB")
+
+			if err := initDB(db); err == nil {
+				break
+			}
+
+			if x > 60 {
+				log.Printf("Retried %d times, exiting\n", x)
+				log.Fatal(err)
+			}
+
+			log.Printf("Failed to connect to DB, retry attempt %d/60. Err: %v\n", x, err)
+			time.Sleep(time.Second)
+			x++
+		}
+	}()
 	log.Println(app.Listen(fmt.Sprintf(":%v", port)))
 }
 
@@ -78,6 +106,7 @@ func getTodos(c *fiber.Ctx, db *sql.DB, version string) error {
 		rows.Scan(&res)
 		todos = append(todos, res)
 	}
+
 	return c.Render("index", fiber.Map{
 		"Todos":      todos,
 		"Enterprise": os.Getenv("ENTERPRISE"),
